@@ -20,7 +20,7 @@ jobs:
   k8s:
     runs-on: self-hosted
     steps:
-    - run: kubectx cicd
+    - run: kubectx kind-cicd
     - run: kubectl get pods
   # This workflow contains a single job called "build"
   build:
