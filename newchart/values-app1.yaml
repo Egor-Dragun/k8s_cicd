@@ -1,0 +1,11 @@
+name: app1
+host: project-local-egor.local
+image:
+  repository: narland/java
+  tag: latest
+port: 8080
+replicas: 1
+
+ingress:
+  enabled: true
+  className: traefik
