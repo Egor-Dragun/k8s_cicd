@@ -32,7 +32,7 @@ jobs:
 
       - name: Set image name and tag
         run: |
-          IMAGE=ghcr.io/${{ github.repository }}/app
+          IMAGE=ghcr.io/egor-dragun/k8s_cicd/app
           TAG=$(git rev-parse --short HEAD)
           echo "IMAGE_NAME=$IMAGE" >> $GITHUB_ENV
           echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
