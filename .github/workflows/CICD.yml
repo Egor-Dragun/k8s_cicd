@@ -49,13 +49,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Helm
+      - name: Install Helm locally
         run: |
           HELM_VERSION="v3.12.3"
           curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz
           tar -zxvf helm.tar.gz
-          mv linux-amd64/helm /usr/local/bin/helm
+          mkdir -p $HOME/bin
+          mv linux-amd64/helm $HOME/bin/helm
           rm -rf helm.tar.gz linux-amd64
+          export PATH=$HOME/bin:$PATH
           helm version
 
       - name: Restore kubeconfig
