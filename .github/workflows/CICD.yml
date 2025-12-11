@@ -10,13 +10,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
       - name: Build Java
         run: mvn -B -f project/pom.xml package -DskipTests
+
       - name: Docker login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build & Push Docker image
         run: |
           docker build -t narland/java:latest project/
@@ -26,9 +35,9 @@ jobs:
     runs-on: self-hosted
     needs: build
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
-      - name: Setup Helm
+
       - name: Install Helm
         run: |
           HELM_VERSION="v3.12.3"
@@ -40,10 +49,12 @@ jobs:
 
       - name: Restore kubeconfig
         run: echo "${{ secrets.KUBECONFIG_DATA }}" > kubeconfig
+
       - name: Deploy App1
         run: |
           export KUBECONFIG=$PWD/kubeconfig
           helm upgrade --install app1 ./newchart --values ./newchart/values-app1.yaml
+
       - name: Deploy App2
         run: |
           export KUBECONFIG=$PWD/kubeconfig
