@@ -31,7 +31,11 @@ jobs:
         env:
           KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
 
-      - name: Deploy using Helm
+      - name: Deploy using Helm App 1
         run: |
           export KUBECONFIG=$PWD/kubeconfig
-          helm upgrade --install app1 ./newchart --values ./newchart/values.yaml
+          helm upgrade --install app1 ./newchart --values ./newchart/values-app1.yaml
+      - name: Deploy Using Helm App 2
+        run: | 
+          export KUBECONFIG=$PWD/kubeconfig
+          helm upgrade --install app2 ./newchart --values ./newchart/values-app2.yaml
