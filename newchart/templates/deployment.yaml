@@ -15,31 +15,31 @@ spec:
     spec:
       containers:
         - name: {{ .Values.name }}-container
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: Always
           ports:
             - containerPort: {{ .Values.port }}
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{.Values.name}}-app
+  name: {{ .Values.name }}-app
 rules:
-- apiGroups: ["", "apps", "networking.k8s.io"]
-  resources: ["pods", "deployments", "services", "ingresses"]
-  verbs: ["get", "list", "create", "update", "patch", "delete"]
-
+  - apiGroups: ["", "apps", "networking.k8s.io"]
+    resources: ["pods", "deployments", "services", "ingresses"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{.Values.name}}-app
+  name: {{ .Values.name }}-app
 subjects:
-- kind: ServiceAccount
-  name: serviceaccount
-  namespace: default
+  - kind: ServiceAccount
+    name: serviceaccount
+    namespace: default
 roleRef:
   kind: ClusterRole
-  name: {{.Values.name}}-app
+  name: {{ .Values.name }}-app
   apiGroup: rbac.authorization.k8s.io
