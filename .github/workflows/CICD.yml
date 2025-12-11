@@ -29,7 +29,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Helm
-        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - name: Install Helm
+        run: |
+          HELM_VERSION="v3.12.3"
+          curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz
+          tar -zxvf helm.tar.gz
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+          rm -rf helm.tar.gz linux-amd64
+          helm version
+
       - name: Restore kubeconfig
         run: echo "${{ secrets.KUBECONFIG_DATA }}" > kubeconfig
       - name: Deploy App1
