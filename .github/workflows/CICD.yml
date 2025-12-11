@@ -1,0 +1,47 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["dev"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Java
+        run: mvn -B -f project/pom.xml package -DskipTests
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & Push Docker image
+        run: |
+          docker build -t narland/java:latest project/
+          docker push narland/java:latest
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+      - name: Setup Helm
+        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - name: Restore kubeconfig
+        run: echo "${{ secrets.KUBECONFIG_DATA }}" > kubeconfig
+      - name: Deploy App1
+        run: |
+          export KUBECONFIG=$PWD/kubeconfig
+          helm upgrade --install app1 ./newchart --values ./newchart/values-app1.yaml
+      - name: Deploy App2
+        run: |
+          export KUBECONFIG=$PWD/kubeconfig
+          helm upgrade --install app2 ./newchart --values ./newchart/values-app2.yaml
