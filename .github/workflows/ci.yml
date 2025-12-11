@@ -1,4 +1,4 @@
-name: CI-build-and-push
+name: CI
 
 on:
   push:
