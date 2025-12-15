@@ -7,8 +7,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.set-tag.outputs.tag }}
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Java 17
@@ -17,25 +19,29 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Build Java project
+      - name: Build Maven project
         run: mvn -B -f project/pom.xml package -DskipTests
 
-      - name: Docker login
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & Push Docker image
+      - name: Set image tag
+        id: set-tag
+        run: echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build & push Docker image
         run: |
-          docker build -t narland/java:latest project/
-          docker push narland/java:latest
+          docker build -t narland/java:${{ steps.set-tag.outputs.tag }} project/
+          docker push narland/java:${{ steps.set-tag.outputs.tag }}
 
   deploy:
-    runs-on: self-hosted
     needs: build
+    runs-on: self-hosted
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Install Helm locally
@@ -43,10 +49,9 @@ jobs:
           HELM_VERSION="v3.12.3"
           curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz
           tar -zxvf helm.tar.gz
-          mv linux-amd64/helm $HOME/helm
+          mv linux-amd64/helm ./helm
           rm -rf helm.tar.gz linux-amd64
-          export PATH=$HOME:$PATH
-          helm version
+          ./helm version
 
       - name: Restore kubeconfig
         run: echo "${{ secrets.KUBECONFIG_DATA }}" > kubeconfig
@@ -54,17 +59,15 @@ jobs:
       - name: Deploy App1
         run: |
           export KUBECONFIG=$PWD/kubeconfig
-          helm upgrade --install app1 ./newchart \
+          ./helm upgrade --install app1 ./newchart \
             --values ./newchart/values-app1.yaml \
             --set image.repository=narland/java \
-            --set image.tag=latest \
-            --reuse-values
+            --set image.tag=${{ needs.build.outputs.image-tag }}
 
       - name: Deploy App2
         run: |
           export KUBECONFIG=$PWD/kubeconfig
-          helm upgrade --install app2 ./newchart \
+          ./helm upgrade --install app2 ./newchart \
             --values ./newchart/values-app2.yaml \
             --set image.repository=narland/java \
-            --set image.tag=latest \
-            --reuse-values
+            --set image.tag=${{ needs.build.outputs.image-tag }}
