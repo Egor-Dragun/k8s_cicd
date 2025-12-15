@@ -1,4 +1,4 @@
-name: build java project
+name: build java app
 
 on:
   push:
@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Java 17
@@ -26,52 +26,39 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & Push Docker image
+      - name: Build & push Docker image
         run: |
-          IMAGE_TAG=$(date +%s)
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-          docker build -t narland/java:$IMAGE_TAG project/
-          docker push narland/java:$IMAGE_TAG
+          TAG=$(git rev-parse --short HEAD)
+          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+          docker build -t narland/java:$TAG project/
+          docker push narland/java:$TAG
 
   deploy:
     runs-on: self-hosted
     needs: build
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install Helm locally
+      - name: Setup Helm
         run: |
-          HELM_VERSION="v3.12.3"
-          curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz
-          tar -zxvf helm.tar.gz
-          mkdir -p $HOME/bin
-          mv linux-amd64/helm $HOME/bin/helm
-          rm -rf helm.tar.gz linux-amd64
-          export PATH=$HOME/bin:$PATH
-          helm version
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
       - name: Restore kubeconfig
         run: echo "${{ secrets.KUBECONFIG_DATA }}" > kubeconfig
 
-      - name: Deploy App1 via Helm
+      - name: Deploy App1
         run: |
           export KUBECONFIG=$PWD/kubeconfig
-          export PATH=$HOME/bin:$PATH
-          helm upgrade --install app1 ./newchart --values ./newchart/values-app1.yaml --set image.tag=${{ env.IMAGE_TAG }}
+          TAG=${{ env.IMAGE_TAG }}
+          helm upgrade --install app1 ./newchart \
+            --values ./newchart/values-app1.yaml \
+            --set image.tag=$TAG
 
-      - name: Deploy App2 via Helm
+      - name: Deploy App2
         run: |
           export KUBECONFIG=$PWD/kubeconfig
-          export PATH=$HOME/bin:$PATH
-          helm upgrade --install app2 ./newchart --values ./newchart/values-app2.yaml --set image.tag=${{ env.IMAGE_TAG }}
-
-      - name: Rollout restart App1
-        run: |
-          export KUBECONFIG=$PWD/kubeconfig
-          kubectl rollout restart deployment app1-app
-
-      - name: Rollout restart App2
-        run: |
-          export KUBECONFIG=$PWD/kubeconfig
-          kubectl rollout restart deployment app2-app
+          TAG=${{ env.IMAGE_TAG }}
+          helm upgrade --install app2 ./newchart \
+            --values ./newchart/values-app2.yaml \
+            --set image.tag=$TAG
