@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-project
+data:
+  APP_PORT: "80"
+---
+apiVersion: v1
+kind: Secret
+metadata: 
+  name: secret-project
+type: Opaque
+data:
+  password: MTIz
+  api_key: azhzc2VjcmV0dGFza2FoYWg=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: project-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      containers:
+      - name: project-container
+        image: narland/java:latest
+        volumeMounts:
+        - name: config-volume      
+          mountPath: /etc/config
+        - name: secret-volume      
+          mountPath: /etc/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: configmap-project   
+      - name: secret-volume
+        secret:
+          secretName: secret-project  
+
