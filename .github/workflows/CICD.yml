@@ -1,4 +1,4 @@
-name: CI-CD
+name: build java application
 
 on:
   push:
@@ -17,12 +17,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set image tag
+#Тег для того чтобы правильно обновлялось приложение
+      - name: set image tag
         id: vars
         run: echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Set up Java 17
+      - name: set up java 
         uses: actions/setup-java@v4
         with:
           distribution: temurin
