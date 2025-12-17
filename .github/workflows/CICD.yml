@@ -43,12 +43,16 @@ jobs:
       - name: Restore kubeconfig
         run: echo "${{ secrets.KUBECONFIG_DATA }}" > $KUBECONFIG
 
-      - name: Apply RBAC resources
-        run: kubectl apply -f roles/serviceAccountRoles.yaml
+      - name: Apply RBAC resources (idempotent)
+        run: |
+          kubectl apply -f roles/serviceAccountRoles.yaml \
+            --namespace arc-runners
 
       - name: Deploy App1
         run: |
           helm upgrade --install app1 ./newchart \
+            --namespace arc-runners \
+            --create-namespace \
             --values ./newchart/values-app1.yaml \
             --set image.repository=narland/java \
             --set image.tag=${{ needs.build.outputs.image-tag }} \
@@ -57,6 +61,8 @@ jobs:
       - name: Deploy App2
         run: |
           helm upgrade --install app2 ./newchart \
+            --namespace arc-runners \
+            --create-namespace \
             --values ./newchart/values-app2.yaml \
             --set image.repository=narland/java \
             --set image.tag=${{ needs.build.outputs.image-tag }} \
