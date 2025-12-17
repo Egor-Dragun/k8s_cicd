@@ -1,4 +1,4 @@
-name: java build & deploy
+name: java build app
 
 on:
   push:
@@ -20,9 +20,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set image tag
+      - name: Set unique image tag
         id: set-tag
-        run: echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: |
+          TAG=$(date +%Y%m%d%H%M%S)-$(git rev-parse --short HEAD)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Build & push Docker image
         run: |
@@ -35,21 +37,6 @@ jobs:
     env:
       KUBECONFIG: ${{ github.workspace }}/kubeconfig
     steps:
-      - name: Install kubectl
-        run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
-
-      - name: Install Helm
-        run: |
-          HELM_VERSION="v3.12.3"
-          curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz
-          tar -zxvf helm.tar.gz
-          sudo mv linux-amd64/helm /usr/local/bin/
-          rm -rf helm.tar.gz linux-amd64
-          helm version
-          
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -57,7 +44,8 @@ jobs:
         run: echo "${{ secrets.KUBECONFIG_DATA }}" > $KUBECONFIG
 
       - name: Apply RBAC resources (idempotent)
-        run: kubectl apply -f roles/serviceAccountRoles.yaml --namespace arc-runners
+        run: |
+          kubectl apply -f roles/serviceAccountRoles.yaml --namespace arc-runners
 
       - name: Deploy App1
         run: |
@@ -67,7 +55,8 @@ jobs:
             --values ./newchart/values-app1.yaml \
             --set image.repository=narland/java \
             --set image.tag=${{ needs.build.outputs.image-tag }} \
-            --set imagePullPolicy=Always
+            --set imagePullPolicy=Always \
+            --set podAnnotations."ci\.build"=${{ needs.build.outputs.image-tag }}
 
       - name: Deploy App2
         run: |
@@ -77,4 +66,5 @@ jobs:
             --values ./newchart/values-app2.yaml \
             --set image.repository=narland/java \
             --set image.tag=${{ needs.build.outputs.image-tag }} \
-            --set imagePullPolicy=Always
+            --set imagePullPolicy=Always \
+            --set podAnnotations."ci\.build"=${{ needs.build.outputs.image-tag }}
