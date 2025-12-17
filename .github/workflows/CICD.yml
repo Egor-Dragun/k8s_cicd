@@ -32,6 +32,8 @@ jobs:
   deploy:
     needs: build
     runs-on: arc-runner-set
+    container:
+      image: bitnami/kubectl:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
