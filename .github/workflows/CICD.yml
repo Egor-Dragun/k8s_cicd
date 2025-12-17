@@ -43,7 +43,7 @@ jobs:
       - name: Restore kubeconfig
         run: echo "${{ secrets.KUBECONFIG_DATA }}" > $KUBECONFIG
 
-      - name: Apply RBAC resources (idempotent)
+      - name: Apply RBAC resources 
         run: |
           kubectl apply -f roles/serviceAccountRoles.yaml --namespace arc-runners
 
