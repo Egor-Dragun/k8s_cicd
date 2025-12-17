@@ -11,14 +11,14 @@ jobs:
       image-tag: ${{ steps.set-tag.outputs.tag }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Set unique image tag
         id: set-tag
@@ -36,12 +36,16 @@ jobs:
     runs-on: arc-runner-set
     env:
       KUBECONFIG: ${{ github.workspace }}/kubeconfig
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Install kubectl
         run: |
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-            chmod +x kubectl
-            sudo mv kubectl /usr/local/bin/
+          curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
 
       - name: Install Helm
         run: |
@@ -50,17 +54,9 @@ jobs:
           tar -zxvf helm.tar.gz
           sudo mv linux-amd64/helm /usr/local/bin/
           rm -rf helm.tar.gz linux-amd64
-          helm version
-          
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Restore kubeconfig
         run: echo "${{ secrets.KUBECONFIG_DATA }}" > $KUBECONFIG
-
-      - name: Apply RBAC resources 
-        run: |
-          kubectl apply -f roles/serviceAccountRoles.yaml --namespace arc-runners
 
       - name: Deploy App1
         run: |
@@ -71,7 +67,7 @@ jobs:
             --set image.repository=narland/java \
             --set image.tag=${{ needs.build.outputs.image-tag }} \
             --set imagePullPolicy=Always \
-            --set podAnnotations."ci\.build"=${{ needs.build.outputs.image-tag }}
+            --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }}
 
       - name: Deploy App2
         run: |
@@ -82,4 +78,4 @@ jobs:
             --set image.repository=narland/java \
             --set image.tag=${{ needs.build.outputs.image-tag }} \
             --set imagePullPolicy=Always \
-            --set podAnnotations."ci\.build"=${{ needs.build.outputs.image-tag }}
+            --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }}
