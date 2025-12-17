@@ -38,6 +38,7 @@ jobs:
       image: lachlanevenson/k8s-helm:v3.12.3
     env:
       KUBECONFIG: ${{ github.workspace }}/kubeconfig
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,7 +48,8 @@ jobs:
 
       - name: Apply RBAC resources (idempotent)
         run: |
-          kubectl apply -f roles/serviceAccountRoles.yaml --namespace arc-runners
+          kubectl apply -f roles/serviceAccountRoles.yaml \
+            --namespace arc-runners
 
       - name: Deploy App1
         run: |
