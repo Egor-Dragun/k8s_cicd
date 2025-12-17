@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: arc
+    runs-on: arc-runner-set
     outputs:
       image-tag: ${{ steps.set-tag.outputs.tag }}
 
