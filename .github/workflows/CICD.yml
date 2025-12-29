@@ -23,7 +23,7 @@ jobs:
       - name: Set unique image tag
         id: set-tag
         run: |
-          HASH=$(git hash-object src/main/java/com/example/revisionapp/RevisionController.java)
+          HASH=$(git hash-object project/src/main/java/com/example/revisionapp/RevisionController.java)
           TAG=$(date +%Y%m%d%H%M%S)-$HASH
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
@@ -44,7 +44,7 @@ jobs:
 
       - name: Check files
         run: | 
-          ls -R src/main/java/com/example/revisionapp/
+          ls -R /home/egor/project/project/src/main/java/com/example/revisionapp/RevisionController.java
 
       - name: Install kubectl
         run: |
