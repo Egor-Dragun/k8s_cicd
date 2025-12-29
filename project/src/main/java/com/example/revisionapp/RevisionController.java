@@ -8,6 +8,6 @@ public class RevisionController {
 
     @GetMapping("/revision")
     public String getRevision() {
-        return "ПРИВЕТ!!!!!";
+        return "ПРИВЕТ!!111";
     }
 }
