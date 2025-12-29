@@ -13,18 +13,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Check RevisionController file
-        run: |
-          ls -l src/main/java/com/example/revisionapp/
-
+        
+      - name: Check files
+        run: | 
+          ls -R src/main/java/com/example/revisionapp/
+          
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set unique image tag based on RevisionController
+      - name: Set unique image tag
         id: set-tag
         run: |
           HASH=$(git hash-object src/main/java/com/example/revisionapp/RevisionController.java)
@@ -46,9 +46,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check RevisionController file
-        run: |
-          ls -l src/main/java/com/example/revisionapp/
+      - name: Check files
+        run: | 
+          ls -R src/main/java/com/example/revisionapp/
 
       - name: Install kubectl
         run: |
