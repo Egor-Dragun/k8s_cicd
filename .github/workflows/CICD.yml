@@ -13,10 +13,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
-      - name: Check files
-        run: | 
-          ls -R src/main/java/com/example/revisionapp/
           
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
