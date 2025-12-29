@@ -13,26 +13,29 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+        with:
+          path: repo
+
       - name: Check files
-        run: | 
-          ls -R project/src/main/java/com/example/revisionapp/
-          
+        run: |
+          ls -R repo/src/main/java/com/example/revisionapp/
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set unique image tag
+      - name: Set unique image tag based on RevisionController
         id: set-tag
         run: |
-          TAG=$(date +%Y%m%d%H%M%S)-$(git rev-parse --short HEAD)
+          HASH=$(git hash-object repo/src/main/java/com/example/revisionapp/RevisionController.java)
+          TAG=$(date +%Y%m%d%H%M%S)-$HASH
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Build & push Docker image
         run: |
-          docker build --no-cache -t narland/java:${{ steps.set-tag.outputs.tag }} project/
+          docker build --no-cache -t narland/java:${{ steps.set-tag.outputs.tag }} repo/
           docker push narland/java:${{ steps.set-tag.outputs.tag }}
 
   deploy:
@@ -42,11 +45,14 @@ jobs:
       KUBECONFIG: ${{ github.workspace }}/kubeconfig
     
     steps:
-      - name: Check files
-        run: | 
-          ls -R project/src/main/java/com/example/revisionapp/
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          path: repo
+
+      - name: Check files
+        run: |
+          ls -R repo/src/main/java/com/example/revisionapp/
 
       - name: Install kubectl
         run: |
