@@ -44,7 +44,7 @@ jobs:
 
       - name: Check files
         run: | 
-          ls -R /home/egor/project/project/src/main/java/com/example/revisionapp
+          ls -R project/src/main/java/com/example/revisionapp/RevisionController.java
 
       - name: Install kubectl
         run: |
