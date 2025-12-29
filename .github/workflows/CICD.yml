@@ -57,7 +57,9 @@ jobs:
           rm -rf helm.tar.gz linux-amd64
 
       - name: Restore kubeconfig
-        run: echo "${{ secrets.KUBECONFIG_DATA }}" > $KUBECONFIG
+        run: |
+          echo "${{ secrets.KUBECONFIG_DATA }}" > $KUBECONFIG
+          chmod 600 $KUBECONFIG
 
       - name: Deploy App1
         run: |
@@ -68,7 +70,7 @@ jobs:
             --set image.tag=${{ needs.build.outputs.image-tag }} \
             --set imagePullPolicy=Always \
             --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }} \
-            --set podAnnotations.ci\\.timestamp=$(date +%s)
+            --set-string podAnnotations.ci\\.timestamp=$(date +%s)
 
       - name: Deploy App2
         run: |
@@ -79,5 +81,5 @@ jobs:
             --set image.tag=${{ needs.build.outputs.image-tag }} \
             --set imagePullPolicy=Always \
             --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }} \
-            --set podAnnotations.ci\\.timestamp=$(date +%s)
+            --set-string podAnnotations.ci\\.timestamp=$(date +%s)
 
