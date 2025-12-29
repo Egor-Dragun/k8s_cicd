@@ -42,10 +42,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check files
-        run: | 
-          ls -R project/src/main/java/com/example/revisionapp/RevisionController.java
-
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -74,6 +70,8 @@ jobs:
             --set imagePullPolicy=Always \
             --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }}
 
+          kubectl rollout restart deployment app1 -n arc-runners
+
       - name: Deploy App2
         run: |
           helm upgrade --install app2 ./newchart \
@@ -84,3 +82,5 @@ jobs:
             --set image.tag=${{ needs.build.outputs.image-tag }} \
             --set imagePullPolicy=Always \
             --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }}
+
+          kubectl rollout restart deployment app2 -n arc-runners
