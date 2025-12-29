@@ -18,7 +18,6 @@ spec:
 {{ toYaml . | indent 8 }}
 {{- end }}
     spec:
-      serviceAccountName: serviceaccount
       containers:
         - name: {{ .Values.name }}-container
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
