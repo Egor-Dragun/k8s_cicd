@@ -67,8 +67,8 @@ jobs:
             --set image.repository=narland/java \
             --set image.tag=${{ needs.build.outputs.image-tag }} \
             --set imagePullPolicy=Always \
-            --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }}
-            kubectl rollout restart deployment/app1-app -n default
+            --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }} \
+            --set podAnnotations.ci\\.timestamp=$(date +%s)
 
       - name: Deploy App2
         run: |
@@ -78,6 +78,6 @@ jobs:
             --set image.repository=narland/java \
             --set image.tag=${{ needs.build.outputs.image-tag }} \
             --set imagePullPolicy=Always \
-            --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }}
-            kubectl rollout restart deployment/app2-app -n default
+            --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }} \
+            --set podAnnotations.ci\\.timestamp=$(date +%s)
 

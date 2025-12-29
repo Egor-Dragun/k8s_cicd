@@ -9,5 +9,5 @@ spec:
     spec:
       repository: Egor-Dragun/k8s_cicd
       labels:
-        - arc
+        - arc-runner-set
       ephemeral: true
