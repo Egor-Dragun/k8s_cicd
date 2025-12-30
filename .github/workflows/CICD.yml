@@ -56,11 +56,6 @@ jobs:
           sudo mv linux-amd64/helm /usr/local/bin/
           rm -rf helm.tar.gz linux-amd64
 
-      - name: Restore kubeconfig
-        run: |
-          echo "${{ secrets.KUBECONFIG_DATA }}" > $KUBECONFIG
-          chmod 600 $KUBECONFIG
-
       - name: Deploy App1
         run: |
           helm upgrade --install app1 ./newchart \
