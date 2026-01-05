@@ -11,3 +11,4 @@ spec:
       labels:
         - arc-runner-set
       ephemeral: true
+      serviceAccountName: app1-sa

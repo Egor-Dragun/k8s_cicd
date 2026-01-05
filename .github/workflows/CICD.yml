@@ -1,4 +1,4 @@
-name: java build app
+name: Java Build & Deploy App
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-          
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -34,10 +34,8 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: arc-runner-set
-    env:
-      KUBECONFIG: ${{ github.workspace }}/kubeconfig
-    
+    runs-on:
+      - arc-runner-set   
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -77,4 +75,3 @@ jobs:
             --set imagePullPolicy=Always \
             --set podAnnotations.ci\\.build=${{ needs.build.outputs.image-tag }} \
             --set-string podAnnotations.ci\\.timestamp=$(date +%s)
-
