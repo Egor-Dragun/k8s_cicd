@@ -35,7 +35,6 @@ jobs:
   deploy:
     needs: build
     runs-on:
-      - self-hosted
       - arc-runner-set   
     steps:
       - name: Checkout repository
